@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menú Digital Rústico</title>
+    <!-- Fuentes Google Rústicas -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Archivo CSS -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Librería para Código QR -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+
+    <!-- Capa de Fondo Dinámico -->
+    <div class="bg-container">
+        <div class="bg-image"></div>
+    </div>
+    <div class="bg-overlay"></div>
+
+    <header>
+        <button class="qr-header-btn" onclick="showQRCode()">📱 Código QR</button>
+        <h1>Delicias de la Casa</h1>
+        <p>Sazones de Campo & Bebidas Frescas</p>
+        <button class="admin-lock-btn" onclick="openAdminModal()" title="Acceso Vendedor">🔒</button>
+    </header>
+
+    <div class="container">
+        
+        <!-- Panel de Administración -->
+        <div class="admin-panel" id="adminPanel">
+            <h3>
+                <span>➕ Panel de Administración</span>
+                <button class="btn-close-admin" onclick="closeAdminPanel()">Cerrar Edición</button>
+            </h3>
+            <div class="form-grid">
+                <input type="text" id="pName" class="form-control" placeholder="Nombre del plato/jugo">
+                <input type="text" id="pDesc" class="form-control" placeholder="Descripción breve">
+                <input type="text" id="pPrice" class="form-control" placeholder="Precio (Ej: $3.50)">
+                <select id="pCategory" class="form-control">
+                    <option value="platos">Plato Principal</option>
+                    <option value="bebidas">Bebida / Jugo</option>
+                </select>
+                <div class="file-input-wrapper">
+                    <label>📸 Foto del producto:</label>
+                    <input type="file" id="pImgFile" class="form-control" accept="image/*">
+                </div>
+            </div>
+            <button class="btn-add" onclick="addNewProduct()">Guardar Plato en el Menú</button>
+
+            <div class="security-box">
+                <span style="font-size: 0.85rem; color: #4a2c11;">⚙️ Seguridad del Panel</span>
+                <button class="btn-change-pin" onclick="changeAdminPIN()">🔑 Cambiar Clave de Acceso</button>
+            </div>
+        </div>
+
+        <!-- Secciones del Menú -->
+        <div class="category-title">🌾 Platos Principales</div>
+        <div class="grid" id="container-platos"></div>
+
+        <div class="category-title">🍹 Bebidas y Jugos</div>
+        <div class="grid" id="container-bebidas"></div>
+
+    </div>
+
+    <!-- Modal Editar Datos -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal-content" style="text-align: left;">
+            <h4>✏️ Editar Datos del Producto</h4>
+            <input type="hidden" id="editId">
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <input type="text" id="editName" class="form-control" placeholder="Nombre">
+                <input type="text" id="editDesc" class="form-control" placeholder="Descripción">
+                <input type="text" id="editPrice" class="form-control" placeholder="Precio">
+                <select id="editCategory" class="form-control">
+                    <option value="platos">Plato Principal</option>
+                    <option value="bebidas">Bebida / Jugo</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-add" onclick="saveEditedData()">Guardar Cambios</button>
+                <button class="btn-close-admin" style="padding: 10px 15px;" onclick="closeEditModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Código QR -->
+    <div class="modal-overlay" id="qrModal">
+        <div class="modal-content">
+            <h4>📱 Escanea para ver el Menú</h4>
+            <div id="qrcode"></div>
+            <p style="font-size: 0.85rem; color: #5d4037; margin-top: 5px;">Escanea este código para ver el menú en vivo.</p>
+            <div class="modal-actions">
+                <button class="btn-close-admin" style="padding: 8px 20px;" onclick="closeQRModal()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentPIN = localStorage.getItem('myMenuPIN') || "1234";
+
+        const defaultMenu = [
+            { id: 1, name: "Fritada Tradicional", desc: "Con mote, maduro frito y llapingachos.", price: "$5.00", category: "platos", img: "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=800" },
+            { id: 2, name: "Deditos de Harina", desc: "Crujientes, rellenos de queso fresco (6 un).", price: "$2.50", category: "platos", img: "https://images.pexels.com/photos/1108117/pexels-photo-1108117.jpeg?auto=compress&cs=tinysrgb&w=800" },
+            { id: 3, name: "Jugo Natural de Mora", desc: "Preparado al instante con fruta fresca.", price: "$1.50", category: "bebidas", img: "https://images.pexels.com/photos/1337825/pexels-photo-1337825.jpeg?auto=compress&cs=tinysrgb&w=800" }
+        ];
+
+        let menuItems = JSON.parse(localStorage.getItem('myMenuData')) || defaultMenu;
+
+        function saveAndRender() {
+            localStorage.setItem('myMenuData', JSON.stringify(menuItems));
+            renderMenu();
+        }
+
+        function renderMenu() {
+            const containerPlatos = document.getElementById('container-platos');
+            const containerBebidas = document.getElementById('container-bebidas');
+
+            containerPlatos.innerHTML = '';
+            containerBebidas.innerHTML = '';
+
+            menuItems.forEach(item => {
+                const cardHTML = `
+                    <div class="card">
+                        <img src="${item.img}" id="img-${item.id}" alt="${item.name}">
+                        <div class="card-body">
+                            <div>
+                                <div class="card-title">${item.name}</div>
+                                <div class="card-desc">${item.desc}</div>
+                            </div>
+                            <div>
+                                <div class="card-price">${item.price}</div>
+                                <div class="card-actions">
+                                    <button class="btn-action btn-edit-data" onclick="openEditModal(${item.id})">✏️ Editar</button>
+                                    <label class="btn-action btn-edit-img">
+                                        🖼️ Foto
+                                        <input type="file" accept="image/*" onchange="changeImageFromFile(event, ${item.id})">
+                                    </label>
+                                    <button class="btn-action btn-delete" onclick="deleteProduct(${item.id})">🗑️ Borrar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                if (item.category === 'platos') {
+                    containerPlatos.innerHTML += cardHTML;
+                } else {
+                    containerBebidas.innerHTML += cardHTML;
+                }
+            });
+        }
+
+        let qrGenerated = false;
+        function showQRCode() {
+            const qrContainer = document.getElementById('qrcode');
+            if (!qrGenerated) {
+                new QRCode(qrContainer, {
+                    text: window.location.href,
+                    width: 180,
+                    height: 180
+                });
+                qrGenerated = true;
+            }
+            document.getElementById('qrModal').classList.add('active');
+        }
+
+        function closeQRModal() {
+            document.getElementById('qrModal').classList.remove('active');
+        }
+
+        function processImage(file, callback) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 600;
+                    const scaleFactor = MAX_WIDTH / img.width;
+                    
+                    if (scaleFactor < 1) {
+                        canvas.width = MAX_WIDTH;
+                        canvas.height = img.height * scaleFactor;
+                    } else {
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                    }
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    callback(canvas.toDataURL('image/jpeg', 0.7));
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function openAdminModal() {
+            const pinEntered = prompt("Ingresa la clave de administrador:");
+            if (pinEntered === currentPIN) {
+                document.getElementById('adminPanel').classList.add('active');
+                document.body.classList.add('is-admin');
+            } else if (pinEntered !== null) {
+                alert("Clave incorrecta.");
+            }
+        }
+
+        function closeAdminPanel() {
+            document.getElementById('adminPanel').classList.remove('active');
+            document.body.classList.remove('is-admin');
+        }
+
+        function changeAdminPIN() {
+            const oldPin = prompt("Ingresa tu clave ACTUAL:");
+            if (oldPin === currentPIN) {
+                const newPin = prompt("Ingresa la NUEVA clave:");
+                if (newPin && newPin.trim() !== '') {
+                    currentPIN = newPin.trim();
+                    localStorage.setItem('myMenuPIN', currentPIN);
+                    alert("¡Clave actualizada con éxito!");
+                }
+            } else if (oldPin !== null) {
+                alert("Clave incorrecta.");
+            }
+        }
+
+        function openEditModal(id) {
+            const item = menuItems.find(p => p.id === id);
+            if (item) {
+                document.getElementById('editId').value = item.id;
+                document.getElementById('editName').value = item.name;
+                document.getElementById('editDesc').value = item.desc;
+                document.getElementById('editPrice').value = item.price;
+                document.getElementById('editCategory').value = item.category;
+                document.getElementById('editModal').classList.add('active');
+            }
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('active');
+        }
+
+        function saveEditedData() {
+            const id = parseInt(document.getElementById('editId').value);
+            const item = menuItems.find(p => p.id === id);
+
+            if (item) {
+                item.name = document.getElementById('editName').value.trim();
+                item.desc = document.getElementById('editDesc').value.trim();
+                item.price = document.getElementById('editPrice').value.trim();
+                item.category = document.getElementById('editCategory').value;
+
+                saveAndRender();
+                closeEditModal();
+            }
+        }
+
+        function addNewProduct() {
+            const name = document.getElementById('pName').value.trim();
+            const desc = document.getElementById('pDesc').value.trim();
+            const price = document.getElementById('pPrice').value.trim();
+            const category = document.getElementById('pCategory').value;
+            const fileInput = document.getElementById('pImgFile');
+
+            if (!name || !price) {
+                alert('Ingresa al menos el Nombre y el Precio.');
+                return;
+            }
+
+            const createAndSave = (imgUrl) => {
+                const newItem = { id: Date.now(), name, desc, price, category, img: imgUrl };
+                menuItems.push(newItem);
+                saveAndRender();
+
+                document.getElementById('pName').value = '';
+                document.getElementById('pDesc').value = '';
+                document.getElementById('pPrice').value = '';
+                document.getElementById('pImgFile').value = '';
+            };
+
+            if (fileInput.files && fileInput.files[0]) {
+                processImage(fileInput.files[0], createAndSave);
+            } else {
+                createAndSave("https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=800");
+            }
+        }
+
+        function changeImageFromFile(event, id) {
+            const file = event.target.files[0];
+            if (file) {
+                processImage(file, (compressedUrl) => {
+                    const product = menuItems.find(p => p.id === id);
+                    if (product) {
+                        product.img = compressedUrl;
+                        saveAndRender();
+                    }
+                });
+            }
+        }
+
+        function deleteProduct(id) {
+            if (confirm("¿Deseas eliminar este plato?")) {
+                menuItems = menuItems.filter(p => p.id !== id);
+                saveAndRender();
+            }
+        }
+
+        renderMenu();
+    </script>
+</body>
+</html>

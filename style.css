@@ -1,0 +1,276 @@
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+}
+
+body { 
+    font-family: 'Poppins', sans-serif;
+    color: #2c1d11; 
+    padding-bottom: 50px; 
+    position: relative;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* --- FONDO DINÁMICO DE NATURALEZA REAL --- */
+.bg-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2;
+    overflow: hidden;
+}
+
+/* Imagen de paisaje natural con movimiento super lento */
+.bg-image {
+    width: 110%;
+    height: 110%;
+    object-fit: cover;
+    object-position: center;
+    background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1920&q=80');
+    background-size: cover;
+    background-position: center;
+    animation: slowPan 25s ease-in-out infinite alternate;
+}
+
+/* Filtro orgánico tipo pergamino/madera sobre el fondo */
+.bg-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(245, 237, 220, 0.82) 20%, rgba(220, 200, 170, 0.92) 100%);
+    backdrop-filter: blur(3px);
+    z-index: -1;
+}
+
+/* Animación de zoom y desplazamiento suave para simular brisa en el campo */
+@keyframes slowPan {
+    0% { transform: scale(1) translate(0, 0); }
+    50% { transform: scale(1.08) translate(-10px, -15px); }
+    100% { transform: scale(1.03) translate(10px, 5px); }
+}
+
+/* Cabecera Rústica con Textura Cálida */
+header { 
+    background: linear-gradient(135deg, rgba(140, 15, 18, 0.92), rgba(85, 8, 10, 0.95)), 
+                url('https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=800&q=80'); 
+    background-size: cover;
+    color: #fcf1df; 
+    text-align: center; 
+    padding: 40px 15px 32px; 
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25); 
+    position: relative;
+    border-bottom: 4px solid #b81419;
+}
+
+header h1 { 
+    font-family: 'Cinzel', serif;
+    font-size: 2.4rem; 
+    letter-spacing: 1.5px;
+    text-shadow: 2px 3px 6px rgba(0, 0, 0, 0.7);
+}
+
+header p { 
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1.1rem; 
+    opacity: 0.95; 
+    margin-top: 6px; 
+    color: #f3d4a0;
+}
+
+.qr-header-btn { 
+    position: absolute; 
+    top: 15px; 
+    left: 15px; 
+    background: rgba(0, 0, 0, 0.45); 
+    border: 1px solid #ffca28; 
+    color: #ffca28; 
+    padding: 7px 14px; 
+    border-radius: 20px; 
+    cursor: pointer; 
+    font-size: 0.85rem; 
+    font-weight: 600; 
+    backdrop-filter: blur(4px); 
+}
+
+.admin-lock-btn { 
+    position: absolute; 
+    top: 15px; 
+    right: 15px; 
+    background: rgba(0, 0, 0, 0.45); 
+    border: 1px solid rgba(255, 255, 255, 0.4); 
+    color: white; 
+    padding: 7px 11px; 
+    border-radius: 50%; 
+    cursor: pointer; 
+    font-size: 1.1rem; 
+}
+
+.container { 
+    width: 92%; 
+    max-width: 900px; 
+    margin: 30px auto; 
+    position: relative; 
+    z-index: 1; 
+}
+
+/* Panel de Administración */
+.admin-panel { 
+    background: #fffefb; 
+    border: 2px solid #6d4c41; 
+    padding: 22px; 
+    border-radius: 12px; 
+    margin-bottom: 30px; 
+    display: none; 
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15); 
+}
+
+.admin-panel.active { display: block; }
+
+.admin-panel h3 { 
+    color: #4a2c11; 
+    margin-bottom: 15px; 
+    font-size: 1.25rem; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    font-family: 'Cinzel', serif; 
+}
+
+.btn-close-admin { 
+    background: #9a0007; 
+    color: white; 
+    border: none; 
+    padding: 6px 14px; 
+    border-radius: 6px; 
+    cursor: pointer; 
+    font-size: 0.8rem; 
+}
+
+.form-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+    gap: 12px; 
+    margin-bottom: 15px; 
+}
+
+.form-control { 
+    width: 100%; 
+    padding: 11px; 
+    border: 1px solid #d7ccc8; 
+    background: #faf6f0; 
+    border-radius: 6px; 
+    font-size: 0.9rem; 
+}
+
+.file-input-wrapper { display: flex; flex-direction: column; gap: 5px; }
+.file-input-wrapper label { font-size: 0.82rem; color: #4a2c11; font-weight: 600; }
+
+.btn-add { 
+    background: #2e7d32; 
+    color: white; 
+    border: none; 
+    padding: 12px 20px; 
+    border-radius: 6px; 
+    font-weight: 600; 
+    cursor: pointer; 
+    width: 100%; 
+}
+
+.security-box { 
+    margin-top: 20px; 
+    padding-top: 15px; 
+    border-top: 1px dashed #a1887f; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    flex-wrap: wrap; 
+    gap: 10px; 
+}
+
+.btn-change-pin { 
+    background: #4a2c11; 
+    color: white; 
+    border: none; 
+    padding: 8px 14px; 
+    border-radius: 6px; 
+    font-size: 0.85rem; 
+    cursor: pointer; 
+}
+
+/* Títulos Rústicos Organizados */
+.category-title { 
+    font-family: 'Cinzel', serif;
+    font-size: 1.55rem; 
+    color: #8c0f12; 
+    margin: 40px 0 20px; 
+    border-bottom: 2px dashed #b81419; 
+    padding-bottom: 8px; 
+    font-weight: 700; 
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; }
+
+/* Tarjetas Estilo Tablón Rústico */
+.card { 
+    background: rgba(255, 253, 249, 0.95); 
+    border-radius: 12px; 
+    overflow: hidden; 
+    border: 1px solid #e0d5c1;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08); 
+    display: flex; 
+    flex-direction: column; 
+    transition: transform 0.3s ease, box-shadow 0.3s ease; 
+}
+
+.card:hover { 
+    transform: translateY(-5px); 
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15); 
+}
+
+.card img { 
+    width: 100%; 
+    aspect-ratio: 4 / 3; 
+    object-fit: cover; 
+    object-position: center; 
+    border-bottom: 3px solid #b81419; 
+}
+
+.card-body { padding: 18px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
+.card-title { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1.25rem; color: #2c1d11; }
+.card-desc { font-size: 0.9rem; color: #5d4037; margin: 8px 0 16px; line-height: 1.45; }
+.card-price { font-family: 'Cinzel', serif; font-weight: 700; color: #8c0f12; font-size: 1.3rem; }
+
+/* Acciones Vendedor */
+.card-actions { margin-top: 12px; padding-top: 12px; border-top: 1px dashed #d7ccc8; display: none; gap: 6px; flex-wrap: wrap; }
+body.is-admin .card-actions { display: flex; }
+
+.btn-action { flex: 1; min-width: 70px; padding: 7px 4px; border: none; border-radius: 5px; font-size: 0.78rem; font-weight: 600; cursor: pointer; text-align: center; }
+.btn-edit-data { background: #f57f17; color: #fff; }
+.btn-edit-img { background: #0288d1; color: white; position: relative; overflow: hidden; display: inline-block; }
+.btn-edit-img input[type=file] { position: absolute; left: 0; top: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+.btn-delete { background: #c62828; color: white; }
+
+/* Modales */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.65); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(4px); }
+.modal-overlay.active { display: flex; }
+.modal-content { background: #fffefb; padding: 25px; border-radius: 12px; border: 2px solid #8c0f12; width: 90%; max-width: 420px; box-shadow: 0 10px 30px rgba(0,0,0,0.35); text-align: center; }
+.modal-content h4 { font-family: 'Cinzel', serif; margin-bottom: 15px; color: #8c0f12; font-size: 1.2rem; }
+.modal-actions { display: flex; gap: 10px; margin-top: 18px; justify-content: center; }
+
+#qrcode { display: flex; justify-content: center; margin: 18px 0; }
+
+@media (max-width: 480px) {
+    .grid { grid-template-columns: 1fr; }
+    .card img { aspect-ratio: 16 / 9; }
+    header h1 { font-size: 1.9rem; }
+}

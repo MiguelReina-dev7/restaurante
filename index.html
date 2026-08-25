@@ -26,7 +26,7 @@
     <header>
         <button class="qr-header-btn" onclick="showQRCode()">📱 Código QR</button>
         
-        <!-- Logo y Nombre Dinámicos -->
+        <!-- Logo, Nombre y Eslogan Dinámicos -->
         <div class="brand-header" style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
             <img id="displayLogo" src="" alt="Logo" style="max-height: 80px; display: none; object-fit: contain; border-radius: 8px;">
             <h1 id="displayRestaurantName">Delicias de la Casa</h1>
@@ -45,43 +45,54 @@
                 <button class="btn-close-admin" onclick="closeAdminPanel()">Cerrar Edición</button>
             </h3>
 
-            <!-- SECCIÓN: Identidad del Restaurante -->
-            <div style="background: rgba(255,255,255,0.7); padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px dashed #8b5a2b;">
-                <h4 style="margin: 0 0 10px 0; color: #4a2c11;">🎨 Personalizar Marca</h4>
+            <!-- SECCIÓN 1: Identidad y Marca del Restaurante -->
+            <div style="background: rgba(255,255,255,0.85); padding: 14px; border-radius: 8px; margin-bottom: 20px; border: 1px dashed #8b5a2b;">
+                <h4 style="margin: 0 0 10px 0; color: #4a2c11; font-size: 1.05rem;">🎨 Configuración Global de la Marca</h4>
                 <div class="form-grid">
-                    <input type="text" id="cfgName" class="form-control" placeholder="Nombre del Restaurante">
-                    <select id="cfgFont" class="form-control">
-                        <option value="'Cinzel', serif">Fuente Rústica Elegant (Cinzel)</option>
-                        <option value="'Playfair Display', serif">Fuente Clásica (Playfair Display)</option>
-                        <option value="'Pacifico', cursive">Fuente Cursiva / Cálida (Pacifico)</option>
-                        <option value="'Poppins', sans-serif">Fuente Moderna / Limpia (Poppins)</option>
-                        <option value="'Montserrat', sans-serif">Fuente Negrita (Montserrat)</option>
-                    </select>
+                    <div>
+                        <label style="font-size: 0.8rem; color: #4a2c11; font-weight: bold;">Nombre del Restaurante:</label>
+                        <input type="text" id="cfgName" class="form-control" placeholder="Ej: La Sazón de Mamá">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; color: #4a2c11; font-weight: bold;">Eslogan / Descrip. Cabecera:</label>
+                        <input type="text" id="cfgSubtitle" class="form-control" placeholder="Ej: Comida Típica & Bebidas">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; color: #4a2c11; font-weight: bold;">Estilo de Letra (Tipografía):</label>
+                        <select id="cfgFont" class="form-control">
+                            <option value="'Cinzel', serif">Rústica / Elegante (Cinzel)</option>
+                            <option value="'Playfair Display', serif">Clásica / Tradicional (Playfair)</option>
+                            <option value="'Pacifico', cursive">Cálida / Cursiva (Pacifico)</option>
+                            <option value="'Poppins', sans-serif">Moderna / Limpia (Poppins)</option>
+                            <option value="'Montserrat', sans-serif">Negrita / Destacada (Montserrat)</option>
+                        </select>
+                    </div>
                     <div class="file-input-wrapper">
-                        <label>🖼️ Logotipo del Restaurante:</label>
+                        <label style="font-size: 0.8rem; color: #4a2c11; font-weight: bold;">🖼️ Logotipo del Restaurante:</label>
                         <input type="file" id="cfgLogoFile" class="form-control" accept="image/*">
                     </div>
                 </div>
-                <button class="btn-add" style="margin-top: 10px; background: #5d4037;" onclick="saveBrandSettings()">Guardar Marca y Estilo</button>
+                <button class="btn-add" style="margin-top: 12px; background: #5d4037;" onclick="saveBrandSettings()">💾 Guardar Identidad de Marca</button>
             </div>
 
-            <!-- SECCIÓN: Agregar Producto -->
-            <h4 style="margin: 10px 0; color: #4a2c11;">🍔 Agregar Nuevo Producto</h4>
+            <!-- SECCIÓN 2: Agregar Producto al Menú -->
+            <h4 style="margin: 10px 0; color: #4a2c11; font-size: 1.05rem;">🍔 Agregar Nuevo Producto</h4>
             <div class="form-grid">
                 <input type="text" id="pName" class="form-control" placeholder="Nombre del plato/jugo">
-                <input type="text" id="pDesc" class="form-control" placeholder="Descripción breve">
+                <input type="text" id="pDesc" class="form-control" placeholder="Descripción breve del plato">
                 <input type="text" id="pPrice" class="form-control" placeholder="Precio (Ej: $3.50)">
                 <select id="pCategory" class="form-control">
                     <option value="platos">Plato Principal</option>
                     <option value="bebidas">Bebida / Jugo</option>
                 </select>
                 <div class="file-input-wrapper">
-                    <label>📸 Foto del producto:</label>
+                    <label style="font-size: 0.8rem; color: #4a2c11; font-weight: bold;">📸 Foto del producto:</label>
                     <input type="file" id="pImgFile" class="form-control" accept="image/*">
                 </div>
             </div>
             <button class="btn-add" onclick="addNewProduct()">Guardar Plato en el Menú</button>
 
+            <!-- SECCIÓN 3: Seguridad -->
             <div class="security-box">
                 <span style="font-size: 0.85rem; color: #4a2c11;">⚙️ Seguridad del Panel</span>
                 <button class="btn-change-pin" onclick="changeAdminPIN()">🔑 Cambiar Clave de Acceso</button>
@@ -97,7 +108,7 @@
 
     </div>
 
-    <!-- Modal Editar Datos -->
+    <!-- Modal Editar Producto -->
     <div class="modal-overlay" id="editModal">
         <div class="modal-content" style="text-align: left;">
             <h4>✏️ Editar Datos del Producto</h4>
@@ -147,16 +158,22 @@
 
         let currentPIN = localStorage.getItem('myMenuPIN') || "1234";
 
-        // 1. Escuchar la Personalización de Marca en Tiempo Real
+        // 1. Escuchar la Configuración del Restaurante en Tiempo Real
         db.collection("configuracion").doc("general").onSnapshot((doc) => {
             if (doc.exists) {
                 const data = doc.data();
                 if (data.nombre) {
                     document.getElementById('displayRestaurantName').innerText = data.nombre;
+                    document.getElementById('cfgName').value = data.nombre;
                     document.title = data.nombre;
+                }
+                if (data.subtitulo) {
+                    document.getElementById('displaySubtitle').innerText = data.subtitulo;
+                    document.getElementById('cfgSubtitle').value = data.subtitulo;
                 }
                 if (data.fuente) {
                     document.getElementById('displayRestaurantName').style.fontFamily = data.fuente;
+                    document.getElementById('cfgFont').value = data.fuente;
                 }
                 if (data.logo) {
                     const logoImg = document.getElementById('displayLogo');
@@ -211,19 +228,21 @@
             return (str || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
         }
 
-        // 3. Guardar Personalización de Marca (Nombre, Tipografía y Logo)
+        // 3. Guardar Toda la Configuración de Marca (Nombre, Eslogan, Tipografía y Logo)
         function saveBrandSettings() {
             const name = document.getElementById('cfgName').value.trim();
+            const subtitle = document.getElementById('cfgSubtitle').value.trim();
             const font = document.getElementById('cfgFont').value;
             const logoFile = document.getElementById('cfgLogoFile').files[0];
 
             const updateData = {};
             if (name) updateData.nombre = name;
+            if (subtitle) updateData.subtitulo = subtitle;
             if (font) updateData.fuente = font;
 
             const executeUpdate = () => {
                 db.collection("configuracion").doc("general").set(updateData, { merge: true })
-                    .then(() => alert("¡Marca y estilo actualizados con éxito!"));
+                    .then(() => alert("¡Identidad de la marca actualizada en tiempo real!"));
             };
 
             if (logoFile) {
@@ -236,7 +255,7 @@
             }
         }
 
-        // 4. Funciones de Modales y QR
+        // 4. Modales y QR
         let qrGenerated = false;
         function showQRCode() {
             if (!qrGenerated) {
@@ -283,7 +302,7 @@
             }
         }
 
-        // 5. Agregar producto a Firebase
+        // 5. Gestión de Productos
         function addNewProduct() {
             const name = document.getElementById('pName').value.trim();
             const desc = document.getElementById('pDesc').value.trim();
@@ -314,7 +333,6 @@
             }
         }
 
-        // 6. Editar y Borrar Productos
         function openEditModal(id, name, desc, price, category) {
             document.getElementById('editId').value = id;
             document.getElementById('editName').value = name;
@@ -353,7 +371,6 @@
             }
         }
 
-        // Compresión de imágenes para optimizar Firestore
         function processImage(file, callback) {
             const reader = new FileReader();
             reader.onload = function(e) {

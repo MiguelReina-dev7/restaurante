@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menú Digital Rústico</title>
-    <!-- Fuentes Google Rústicas -->
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <title id="siteTitle">Menú Digital Rústico</title>
+    <!-- Fuentes Google Rústicas y Modernas -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Poppins:wght@400;600&family=Pacifico&family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
     <!-- Archivo CSS -->
     <link rel="stylesheet" href="style.css">
     <!-- Librería para Código QR -->
@@ -25,8 +25,14 @@
 
     <header>
         <button class="qr-header-btn" onclick="showQRCode()">📱 Código QR</button>
-        <h1>Delicias de la Casa</h1>
-        <p>Sazones de Campo & Bebidas Frescas</p>
+        
+        <!-- Logo y Nombre Dinámicos -->
+        <div class="brand-header" style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+            <img id="displayLogo" src="" alt="Logo" style="max-height: 80px; display: none; object-fit: contain; border-radius: 8px;">
+            <h1 id="displayRestaurantName">Delicias de la Casa</h1>
+        </div>
+        
+        <p id="displaySubtitle">Sazones de Campo & Bebidas Frescas</p>
         <button class="admin-lock-btn" onclick="openAdminModal()" title="Acceso Vendedor">🔒</button>
     </header>
 
@@ -38,6 +44,29 @@
                 <span>➕ Panel de Administración</span>
                 <button class="btn-close-admin" onclick="closeAdminPanel()">Cerrar Edición</button>
             </h3>
+
+            <!-- SECCIÓN: Identidad del Restaurante -->
+            <div style="background: rgba(255,255,255,0.7); padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px dashed #8b5a2b;">
+                <h4 style="margin: 0 0 10px 0; color: #4a2c11;">🎨 Personalizar Marca</h4>
+                <div class="form-grid">
+                    <input type="text" id="cfgName" class="form-control" placeholder="Nombre del Restaurante">
+                    <select id="cfgFont" class="form-control">
+                        <option value="'Cinzel', serif">Fuente Rústica Elegant (Cinzel)</option>
+                        <option value="'Playfair Display', serif">Fuente Clásica (Playfair Display)</option>
+                        <option value="'Pacifico', cursive">Fuente Cursiva / Cálida (Pacifico)</option>
+                        <option value="'Poppins', sans-serif">Fuente Moderna / Limpia (Poppins)</option>
+                        <option value="'Montserrat', sans-serif">Fuente Negrita (Montserrat)</option>
+                    </select>
+                    <div class="file-input-wrapper">
+                        <label>🖼️ Logotipo del Restaurante:</label>
+                        <input type="file" id="cfgLogoFile" class="form-control" accept="image/*">
+                    </div>
+                </div>
+                <button class="btn-add" style="margin-top: 10px; background: #5d4037;" onclick="saveBrandSettings()">Guardar Marca y Estilo</button>
+            </div>
+
+            <!-- SECCIÓN: Agregar Producto -->
+            <h4 style="margin: 10px 0; color: #4a2c11;">🍔 Agregar Nuevo Producto</h4>
             <div class="form-grid">
                 <input type="text" id="pName" class="form-control" placeholder="Nombre del plato/jugo">
                 <input type="text" id="pDesc" class="form-control" placeholder="Descripción breve">
@@ -102,7 +131,7 @@
     </div>
 
     <script>
-        //  CONFIGURACIÓN DE FIREBASE 
+        // CONFIGURACIÓN DE FIREBASE 
         const firebaseConfig = {
             apiKey: "AIzaSyA64FpauZFJG-squBRES8ZTVCiCwDhdzMQ",
             authDomain: "menu-restaurante-1e9a1.firebaseapp.com",
@@ -118,7 +147,26 @@
 
         let currentPIN = localStorage.getItem('myMenuPIN') || "1234";
 
-        // 2. Escuchar datos en tiempo real desde la Nube
+        // 1. Escuchar la Personalización de Marca en Tiempo Real
+        db.collection("configuracion").doc("general").onSnapshot((doc) => {
+            if (doc.exists) {
+                const data = doc.data();
+                if (data.nombre) {
+                    document.getElementById('displayRestaurantName').innerText = data.nombre;
+                    document.title = data.nombre;
+                }
+                if (data.fuente) {
+                    document.getElementById('displayRestaurantName').style.fontFamily = data.fuente;
+                }
+                if (data.logo) {
+                    const logoImg = document.getElementById('displayLogo');
+                    logoImg.src = data.logo;
+                    logoImg.style.display = "block";
+                }
+            }
+        });
+
+        // 2. Escuchar Productos en Tiempo Real
         db.collection("productos").onSnapshot((snapshot) => {
             const containerPlatos = document.getElementById('container-platos');
             const containerBebidas = document.getElementById('container-bebidas');
@@ -163,7 +211,32 @@
             return (str || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
         }
 
-        // 3. Funciones de Modales y QR
+        // 3. Guardar Personalización de Marca (Nombre, Tipografía y Logo)
+        function saveBrandSettings() {
+            const name = document.getElementById('cfgName').value.trim();
+            const font = document.getElementById('cfgFont').value;
+            const logoFile = document.getElementById('cfgLogoFile').files[0];
+
+            const updateData = {};
+            if (name) updateData.nombre = name;
+            if (font) updateData.fuente = font;
+
+            const executeUpdate = () => {
+                db.collection("configuracion").doc("general").set(updateData, { merge: true })
+                    .then(() => alert("¡Marca y estilo actualizados con éxito!"));
+            };
+
+            if (logoFile) {
+                processImage(logoFile, (compressedLogo) => {
+                    updateData.logo = compressedLogo;
+                    executeUpdate();
+                });
+            } else {
+                executeUpdate();
+            }
+        }
+
+        // 4. Funciones de Modales y QR
         let qrGenerated = false;
         function showQRCode() {
             if (!qrGenerated) {
@@ -210,7 +283,7 @@
             }
         }
 
-        // 4. Agregar plato a la Nube (Firebase)
+        // 5. Agregar producto a Firebase
         function addNewProduct() {
             const name = document.getElementById('pName').value.trim();
             const desc = document.getElementById('pDesc').value.trim();
@@ -241,7 +314,7 @@
             }
         }
 
-        // 5. Editar y Borrar en Firebase
+        // 6. Editar y Borrar Productos
         function openEditModal(id, name, desc, price, category) {
             document.getElementById('editId').value = id;
             document.getElementById('editName').value = name;
@@ -280,7 +353,7 @@
             }
         }
 
-        // Compresión de imágenes
+        // Compresión de imágenes para optimizar Firestore
         function processImage(file, callback) {
             const reader = new FileReader();
             reader.onload = function(e) {

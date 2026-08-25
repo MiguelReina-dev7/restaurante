@@ -10,6 +10,10 @@
     <link rel="stylesheet" href="style.css">
     <!-- Librería para Código QR -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+    <!-- Librerías de Firebase de Google -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
@@ -98,29 +102,32 @@
     </div>
 
     <script>
+        //  CONFIGURACIÓN DE FIREBASE 
+        const firebaseConfig = {
+            apiKey: "AIzaSyA64FpauZFJG-squBRES8ZTVCiCwDhdzMQ",
+            authDomain: "menu-restaurante-1e9a1.firebaseapp.com",
+            projectId: "menu-restaurante-1e9a1",
+            storageBucket: "menu-restaurante-1e9a1.appspot.com",
+            messagingSenderId: "324302944041",
+            appId: "1:324302944041:web:8975dbdcbeb6ce5cd2e938"
+        };
+
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
         let currentPIN = localStorage.getItem('myMenuPIN') || "1234";
 
-        const defaultMenu = [
-            { id: 1, name: "Fritada Tradicional", desc: "Con mote, maduro frito y llapingachos.", price: "$5.00", category: "platos", img: "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=800" },
-            { id: 2, name: "Deditos de Harina", desc: "Crujientes, rellenos de queso fresco (6 un).", price: "$2.50", category: "platos", img: "https://images.pexels.com/photos/1108117/pexels-photo-1108117.jpeg?auto=compress&cs=tinysrgb&w=800" },
-            { id: 3, name: "Jugo Natural de Mora", desc: "Preparado al instante con fruta fresca.", price: "$1.50", category: "bebidas", img: "https://images.pexels.com/photos/1337825/pexels-photo-1337825.jpeg?auto=compress&cs=tinysrgb&w=800" }
-        ];
-
-        let menuItems = JSON.parse(localStorage.getItem('myMenuData')) || defaultMenu;
-
-        function saveAndRender() {
-            localStorage.setItem('myMenuData', JSON.stringify(menuItems));
-            renderMenu();
-        }
-
-        function renderMenu() {
+        // 2. Escuchar datos en tiempo real desde la Nube
+        db.collection("productos").onSnapshot((snapshot) => {
             const containerPlatos = document.getElementById('container-platos');
             const containerBebidas = document.getElementById('container-bebidas');
 
             containerPlatos.innerHTML = '';
             containerBebidas.innerHTML = '';
 
-            menuItems.forEach(item => {
+            snapshot.forEach((doc) => {
+                const item = { id: doc.id, ...doc.data() };
                 const cardHTML = `
                     <div class="card">
                         <img src="${item.img}" id="img-${item.id}" alt="${item.name}">
@@ -132,12 +139,12 @@
                             <div>
                                 <div class="card-price">${item.price}</div>
                                 <div class="card-actions">
-                                    <button class="btn-action btn-edit-data" onclick="openEditModal(${item.id})">✏️ Editar</button>
+                                    <button class="btn-action btn-edit-data" onclick="openEditModal('${item.id}', '${escapeQuotes(item.name)}', '${escapeQuotes(item.desc)}', '${escapeQuotes(item.price)}', '${item.category}')">✏️ Editar</button>
                                     <label class="btn-action btn-edit-img">
                                         🖼️ Foto
-                                        <input type="file" accept="image/*" onchange="changeImageFromFile(event, ${item.id})">
+                                        <input type="file" accept="image/*" onchange="changeImageFromFile(event, '${item.id}')">
                                     </label>
-                                    <button class="btn-action btn-delete" onclick="deleteProduct(${item.id})">🗑️ Borrar</button>
+                                    <button class="btn-action btn-delete" onclick="deleteProduct('${item.id}')">🗑️ Borrar</button>
                                 </div>
                             </div>
                         </div>
@@ -150,13 +157,17 @@
                     containerBebidas.innerHTML += cardHTML;
                 }
             });
+        });
+
+        function escapeQuotes(str) {
+            return (str || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
         }
 
+        // 3. Funciones de Modales y QR
         let qrGenerated = false;
         function showQRCode() {
-            const qrContainer = document.getElementById('qrcode');
             if (!qrGenerated) {
-                new QRCode(qrContainer, {
+                new QRCode(document.getElementById('qrcode'), {
                     text: window.location.href,
                     width: 180,
                     height: 180
@@ -168,32 +179,6 @@
 
         function closeQRModal() {
             document.getElementById('qrModal').classList.remove('active');
-        }
-
-        function processImage(file, callback) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 600;
-                    const scaleFactor = MAX_WIDTH / img.width;
-                    
-                    if (scaleFactor < 1) {
-                        canvas.width = MAX_WIDTH;
-                        canvas.height = img.height * scaleFactor;
-                    } else {
-                        canvas.width = img.width;
-                        canvas.height = img.height;
-                    }
-
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    callback(canvas.toDataURL('image/jpeg', 0.7));
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
         }
 
         function openAdminModal() {
@@ -225,37 +210,7 @@
             }
         }
 
-        function openEditModal(id) {
-            const item = menuItems.find(p => p.id === id);
-            if (item) {
-                document.getElementById('editId').value = item.id;
-                document.getElementById('editName').value = item.name;
-                document.getElementById('editDesc').value = item.desc;
-                document.getElementById('editPrice').value = item.price;
-                document.getElementById('editCategory').value = item.category;
-                document.getElementById('editModal').classList.add('active');
-            }
-        }
-
-        function closeEditModal() {
-            document.getElementById('editModal').classList.remove('active');
-        }
-
-        function saveEditedData() {
-            const id = parseInt(document.getElementById('editId').value);
-            const item = menuItems.find(p => p.id === id);
-
-            if (item) {
-                item.name = document.getElementById('editName').value.trim();
-                item.desc = document.getElementById('editDesc').value.trim();
-                item.price = document.getElementById('editPrice').value.trim();
-                item.category = document.getElementById('editCategory').value;
-
-                saveAndRender();
-                closeEditModal();
-            }
-        }
-
+        // 4. Agregar plato a la Nube (Firebase)
         function addNewProduct() {
             const name = document.getElementById('pName').value.trim();
             const desc = document.getElementById('pDesc').value.trim();
@@ -268,21 +223,51 @@
                 return;
             }
 
-            const createAndSave = (imgUrl) => {
-                const newItem = { id: Date.now(), name, desc, price, category, img: imgUrl };
-                menuItems.push(newItem);
-                saveAndRender();
-
-                document.getElementById('pName').value = '';
-                document.getElementById('pDesc').value = '';
-                document.getElementById('pPrice').value = '';
-                document.getElementById('pImgFile').value = '';
+            const saveToDatabase = (imgUrl) => {
+                db.collection("productos").add({
+                    name, desc, price, category, img: imgUrl, createdAt: Date.now()
+                }).then(() => {
+                    document.getElementById('pName').value = '';
+                    document.getElementById('pDesc').value = '';
+                    document.getElementById('pPrice').value = '';
+                    document.getElementById('pImgFile').value = '';
+                });
             };
 
             if (fileInput.files && fileInput.files[0]) {
-                processImage(fileInput.files[0], createAndSave);
+                processImage(fileInput.files[0], saveToDatabase);
             } else {
-                createAndSave("https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=800");
+                saveToDatabase("https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=800");
+            }
+        }
+
+        // 5. Editar y Borrar en Firebase
+        function openEditModal(id, name, desc, price, category) {
+            document.getElementById('editId').value = id;
+            document.getElementById('editName').value = name;
+            document.getElementById('editDesc').value = desc;
+            document.getElementById('editPrice').value = price;
+            document.getElementById('editCategory').value = category;
+            document.getElementById('editModal').classList.add('active');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('active');
+        }
+
+        function saveEditedData() {
+            const id = document.getElementById('editId').value;
+            db.collection("productos").doc(id).update({
+                name: document.getElementById('editName').value.trim(),
+                desc: document.getElementById('editDesc').value.trim(),
+                price: document.getElementById('editPrice').value.trim(),
+                category: document.getElementById('editCategory').value
+            }).then(() => closeEditModal());
+        }
+
+        function deleteProduct(id) {
+            if (confirm("¿Deseas eliminar este plato del menú general?")) {
+                db.collection("productos").doc(id).delete();
             }
         }
 
@@ -290,23 +275,30 @@
             const file = event.target.files[0];
             if (file) {
                 processImage(file, (compressedUrl) => {
-                    const product = menuItems.find(p => p.id === id);
-                    if (product) {
-                        product.img = compressedUrl;
-                        saveAndRender();
-                    }
+                    db.collection("productos").doc(id).update({ img: compressedUrl });
                 });
             }
         }
 
-        function deleteProduct(id) {
-            if (confirm("¿Deseas eliminar este plato?")) {
-                menuItems = menuItems.filter(p => p.id !== id);
-                saveAndRender();
-            }
+        // Compresión de imágenes
+        function processImage(file, callback) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 500;
+                    const scaleFactor = MAX_WIDTH / img.width;
+                    canvas.width = scaleFactor < 1 ? MAX_WIDTH : img.width;
+                    canvas.height = scaleFactor < 1 ? img.height * scaleFactor : img.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    callback(canvas.toDataURL('image/jpeg', 0.6));
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
         }
-
-        renderMenu();
     </script>
 </body>
 </html>
